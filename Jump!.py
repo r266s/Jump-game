@@ -183,7 +183,7 @@ while running:
     add_plr.draw(screen)
     add_plr.update()
     scroll_speed -= 5
-    
+
     for i in range(0, t):
       screen.blit(G_image, (i * G_image.get_width() + scroll_speed, 440))
 
@@ -208,7 +208,6 @@ while running:
           SE_num = 0
           show = True
           stop_G = False
-          grave_sp = 5
           GVE_gp.empty()
 
 
