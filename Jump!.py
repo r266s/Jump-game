@@ -25,6 +25,8 @@ rand_GVE_image = [
 
 jp_sound = PYG.mixer.Sound(f"{sounds_dir}/PL_jp.mp3")
 get_hit = PYG.mixer.Sound(f"{sounds_dir}/lose.mp3")
+jp_sound.set_volume(2)
+get_hit.set_volume(5)
 
 G_rect = G_image.get_rect()
 G_rect.width = G_image.get_width()
@@ -37,7 +39,7 @@ PL_Hit = PL_image.get_rect()
 reset_gra = -1
 gra = 0
 vel_y = 0
-fall = True
+fall = False
     
 class grave(PYG.sprite.Sprite):
   def __init__(self, image : str):
@@ -46,20 +48,22 @@ class grave(PYG.sprite.Sprite):
     self.rect = self.image.get_rect()
     self.rect.bottom = G_rect.top
     self.rect.x = screen.get_width()
+    self.grave_sp = 5
   def update(self):
     global SE_num
-    global stop
+    global stop_G
     global show
-    self.rect.move_ip(-5, 0)
 
-    if self.rect.x is 0:
+    self.rect.move_ip(-self.grave_sp, 0)
+
+    if self.rect.x == 0:
       SE_num += 1
 
     if self.rect.x <= -45:
       self.kill()
 
     if self.rect.colliderect(PL_Hit):
-      stop = True
+      stop_G = True
       show = False
       get_hit.play()
       self.kill()
@@ -96,7 +100,8 @@ class player(PYG.sprite.Sprite):
       if self.rect.bottom == G_rect.top:
         vel_y -= 20
         fall = True
-        jp_sound.play()
+        if start_G is True:
+          jp_sound.play()
     
     if self.rect.colliderect(G_rect):
       self.rect.bottom = G_rect.top
@@ -105,7 +110,7 @@ class player(PYG.sprite.Sprite):
 timer_event = PYG.USEREVENT+1
 PYG.time.set_timer(timer_event, 1250)
 
-plr = player(10, 200)
+plr = player(10, -100)
 add_plr = PYG.sprite.Group()
 add_plr.add(plr)
 
@@ -124,7 +129,7 @@ lose_font = PYG.font.Font(None, 45)
 lose_txt = lose_font.render("You get hit by a grave!", True, "white")
 
 txt_button_font = PYG.font.Font(None, 50)
-txt_button = txt_button_font.render("Start", True, "white")
+txt_button = txt_button_font.render("start", True, "white")
 
 reset_txt_font = PYG.font.Font(None, 50)
 reset_txt = reset_txt_font.render("reset", True, "white")
@@ -142,16 +147,17 @@ start_button = PYG.Rect((button_center_x, 200, 150, 50))
 reset_button = PYG.Rect((button_center_x, 200, 150, 50))
 
 SE_num = 0
+SE_num_lvl = 5
 running = True
-start = False
-stop = False
+start_G = False
+stop_G = False
 show = False
 
 while running:
   PYG.display.flip()
   screen.blit(BG1_image, (0, 0))
 
-  if start is False:
+  if start_G is False:
     screen.blit(M_txt, (txt_center_x, 100))
     PYG.draw.rect(screen, (0, 255, 0), start_button)
     screen.blit(txt_button, (txt_button_center_x, 210))
@@ -161,7 +167,7 @@ while running:
     SE_text = SE_font.render(f"Score: {str(SE_num)}", True, "white")
     screen.blit(SE_text, (0, 20))
 
-  if stop is True:
+  if stop_G is True:
     screen.blit(reset_BG_image, (0, 0))
     SE_font = PYG.font.Font(None, 30)
     SE_text = SE_font.render(f"Your score: {str(SE_num)}", True, "white")
@@ -170,14 +176,14 @@ while running:
     PYG.draw.rect(screen, (255, 0, 0), reset_button)
     screen.blit(reset_txt, (txt_button_center_x, 210))
 
-  if stop is False:
+  if stop_G is False:
     screen.blit(WM_txt, (0, 0))
     GVE_gp.draw(screen)
     GVE_gp.update()
     add_plr.draw(screen)
     add_plr.update()
     scroll_speed -= 5
- 
+    
     for i in range(0, t):
       screen.blit(G_image, (i * G_image.get_width() + scroll_speed, 440))
 
@@ -192,19 +198,22 @@ while running:
       mouse_pos = PYG.mouse.get_pos()
 
       if start_button.collidepoint(mouse_pos):
-        if start is False:
-          start = True
+        if start_G is False:
+          start_G = True
           show = True
+          fall = True
 
       if reset_button.collidepoint(mouse_pos):
-        if stop is True:
+        if stop_G is True:
           SE_num = 0
           show = True
-          stop = False
+          stop_G = False
+          grave_sp = 5
           GVE_gp.empty()
 
+
     if events.type == timer_event:
-      if start is True:
+      if start_G is True:
         GVE = grave(random.choice(rand_GVE_image))
         GVE_gp.add(GVE)
     
